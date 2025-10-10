@@ -191,7 +191,7 @@ if !colors.is_empty() {
 <div style="margin-top: 3rem;">
         <h3>"Colour Definitions"</h3>
         <ul style="line-height: 2;">
-       <li><strong>Yellow</strong>: Identity function '—' returns its argument unchanged.</li>
+       <li><strong>Yellow</strong>: Identity function; returns its argument unchanged.</li>
 
                <li><strong>Red</strong>: Returns the first argument, discarding the second.</li>
 
