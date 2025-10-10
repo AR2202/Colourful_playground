@@ -4,13 +4,21 @@
 <head>
     <meta charset="UTF-8" />
     <title>Colourful Playground</title>
-</head>
+<link rel="modulepreload" href="/Colourful_playground-8caaafd15a2ec4d6.js" crossorigin="anonymous" integrity="sha384-Klqcf9euybL+Q8H1tsdqLrpAv+1yfNR49IVXG424opnsAb8QgMZDqPpWD7rAPIfv"><link rel="preload" href="/Colourful_playground-8caaafd15a2ec4d6_bg.wasm" crossorigin="anonymous" integrity="sha384-CIUHYeT3kM+Sz/5YH2MOzEWDwo+dSmZeMa+XxHSyJjN7Jmz5hQBq67FrvAWOzcxu" as="fetch" type="application/wasm"></head>
 
 <body>
-    <script type="module">
-        import init from './pkg/Colourful_playground.js';
-        init();
-    </script>
-</body>
+
+
+<script type="module">
+import init, * as bindings from '/Colourful_playground-8caaafd15a2ec4d6.js';
+const wasm = await init({ module_or_path: '/Colourful_playground-8caaafd15a2ec4d6_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
 
 </html>
