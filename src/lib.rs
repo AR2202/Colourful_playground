@@ -38,6 +38,8 @@ fn App() -> impl IntoView {
     let (boxes, set_boxes) = create_signal(Vec::<BoxItem>::new());
     let next_id = create_rw_signal(0);
     let (show_evaluation, set_show_evaluation) = create_signal(false);
+    let (is_dark, set_is_dark) = create_signal(false);
+
 
     let (colors, _set_colors) = create_signal(vec![
     Color::Primary(Red),
@@ -86,11 +88,43 @@ let color_buttons = {
 };
 
     view! {
-        <main style="padding: 2rem; font-family: sans-serif;font-size: 1.5rem;">
-           <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">"Colourful Playground"</h1>
-        <p style="margin-bottom: 2rem; max-width: 800px;">
-            "Colourful is an esoteric/satirical functional programming language where colours are used as combinators. Inspired by combinatory logic, it lets you build expressions using colour blocks. Evaluation happens right to left and bottom to top. This playground lets you experiment with expressions, see how they reduce, and explore the language interactively."
-        </p>
+        <main style={move || {
+        if is_dark.get() {
+            "background-color: #121212; color: #f0f0f0; padding: 3rem;"
+        } else {
+            "background: linear-gradient(to right, #fdfbfb, #ebedee); color: #333; padding: 3rem;"
+        }
+    }}
+    >
+
+               <h1 style="font-size: 3rem; margin-bottom: 1rem; text-align: center;">
+        <span style="color: #e63946;">"C"</span>
+        <span style="color: #f1a208;">"o"</span>
+        <span style="color: #2a9d8f;">"l"</span>
+        <span style="color: #457b9d;">"o"</span>
+        <span style="color: #9d4edd;">"u"</span>
+        <span style="color: #ff006e;">"r"</span>
+        <span style="color: #06d6a0;">"f"</span>
+        <span style="color: #f72585;">"u"</span>
+        <span style="color: #3a0ca3;">"l"</span>
+        " Playground 🎨"
+    </h1>
+
+<p style={move || {
+    if is_dark.get() {
+        "margin: 0 auto 2rem; max-width: 800px; color: #ccc; text-align: center;"
+    } else {
+        "margin: 0 auto 2rem; max-width: 800px; color: #333; text-align: center;"
+    }
+}}>
+    "Colourful is an esoteric/satirical functional programming language where colours are used as combinators. Inspired by combinatory logic, it lets you build expressions using colour blocks. Evaluation happens right to left and bottom to top. This playground lets you experiment with expressions, see how they reduce, and explore the language interactively."
+</p>
+
+        <button on:click=move |_| set_is_dark.update(|v| *v = !*v)
+            style="margin-bottom: 1rem; padding: 0.5rem 1rem; font-size: 1rem;">
+        {move || if is_dark.get() { "☀️ Light Mode" } else { "🌙 Dark Mode" }}
+    </button>
+
 
 
             <div style="margin-bottom: 1rem;">
@@ -190,22 +224,20 @@ if !colors.is_empty() {
 }}
 <div style="margin-top: 3rem;">
         <h3>"Colour Definitions"</h3>
-        <ul style="line-height: 2;">
-       <li><strong>Yellow</strong>: Identity function; returns its argument unchanged.</li>
+       <ul style="line-height: 2;">
+    <li><strong style="color: yellow;">Yellow</strong>: Identity function; returns its argument unchanged.</li>
+    <li><strong style="color: red;">Red</strong>: Returns the first argument, discarding the second.</li>
+    <li><strong style="color: blue;">Blue</strong>: Applies the first argument to both the second and third.</li>
+    <li><strong style="color: orange;">Orange</strong>: Red applied to Yellow.</li>
+    <li><strong style="color: green;">Green</strong>: Blue applied to Yellow.</li>
+    <li><strong style="color: purple;">Purple</strong>: Red applied to Blue.</li>
+    <li><strong style="color: pink;">Pink</strong>: Red applied to Red.</li>
+    <li><strong style="color: cyan;">Cyan</strong>: Blue applied to Blue.</li>
+    <li><strong style="color: violet;">Violet</strong>: Blue applied to Red.</li>
+    <li><strong style="color: lime;">Lime</strong>: Blue applied to Yellow and Yellow.</li>
+    <li><strong style="color: teal;">Teal</strong>: Blue applied to Yellow and Blue.</li>
+</ul>
 
-               <li><strong>Red</strong>: Returns the first argument, discarding the second.</li>
-
-            <li><strong>Blue</strong>: Applies the first argument to both the second and third.</li>
-            
-            <li><strong>Orange</strong>: Red applied to Yellow.</li>
-            <li><strong>Green</strong>: Blue Applied to Yellow.</li>
-            <li><strong>Purple</strong>: Red applied to Blue.</li>
-            <li><strong>Pink</strong>: Red applied to Red.</li>
-            <li><strong>Cyan</strong>: Blue applied to Blue.</li>
-            <li><strong>Violet</strong>: Blue applied to Red.</li>
-            <li><strong>Lime</strong>: Blue applied to Yellow and Yellow.</li>
-            <li><strong>Teal</strong>: Blue applied to Yellow and Blue.</li>
-        </ul>
     </div>
 
  // 🌐 GitHub Links Section
