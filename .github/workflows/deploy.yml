@@ -3,7 +3,7 @@ name: Deploy Leptos App to GitHub Pages
 on:
   push:
     branches:
-      - main # or your default branch
+      - main  # or your default branch
 
 jobs:
   build-and-deploy:
@@ -18,6 +18,9 @@ jobs:
         with:
           toolchain: stable
           override: true
+
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
 
       - name: Install Trunk
         run: cargo install trunk
