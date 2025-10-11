@@ -227,7 +227,7 @@ if !colors.is_empty() {
        <ul style="line-height: 2;">
     <li><strong style="color: yellow;">Yellow</strong>: Identity function; returns its argument unchanged.</li>
     <li><strong style="color: red;">Red</strong>: Returns the first argument, discarding the second.</li>
-    <li><strong style="color: blue;">Blue</strong>: Applies the first argument to both the second and third.</li>
+    <li><strong style="color: blue;">Blue</strong>: Applies the result of applying the first argument to the third to the result of applying the second to the third.</li>
     <li><strong style="color: orange;">Orange</strong>: Red applied to Yellow.</li>
     <li><strong style="color: green;">Green</strong>: Blue applied to Yellow.</li>
     <li><strong style="color: purple;">Purple</strong>: Red applied to Blue.</li>
