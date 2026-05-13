@@ -56,6 +56,7 @@ fn App() -> impl IntoView {
 ]);
 
 let (evaluation_result, set_evaluation_result) = create_signal(Vec::<Color>::new());
+let (text_eval_result, set_text_eval_result) = create_signal(Vec::<Color>::new());
 let color_buttons = {
     let color_list = colors.get().clone();
     color_list.into_iter().map(|c| {
@@ -166,8 +167,6 @@ if !colors.is_empty() {
                 
             </div>
 
-            <p style=move || format!("color: {};", color.get())>{text}</p>
-
             <div style="display: flex; gap: 1rem; font-size: 1.5rem; flex-wrap: wrap;">
                 <For
     each=move || boxes.get().clone()
@@ -202,7 +201,7 @@ if !colors.is_empty() {
     }
 />
             </div>
-            
+
 {move || {
     let result_colors = evaluation_result.get();
     (!result_colors.is_empty()).then(|| {
@@ -222,6 +221,47 @@ if !colors.is_empty() {
         }
     })
 }}
+
+            <div style="display: flex; align-items: flex-start; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;">
+                <textarea
+                    style="flex: 1; max-width: 800px; height: 8rem; font-size: 1.2rem; padding: 0.5rem;"
+                    prop:value=text
+                    on:input=move |e| set_text.set(event_target_value(&e))
+                />
+                <button
+                    style="font-size: 1.2rem; padding: 0.5rem 1rem; white-space: nowrap;"
+                    on:click=move |_| {
+                        let colors: Vec<Color> = text.get()
+                            .split(|c: char| !c.is_alphabetic())
+                            .filter_map(|word| color_from_name(word))
+                            .collect();
+                        if !colors.is_empty() {
+                            let expr = build_expr_from_colors(&colors);
+                            let result = extract_colors(&evaluate(expr)).into_iter().rev().collect();
+                            set_text_eval_result.set(result);
+                        }
+                    }
+                >
+                    "Evaluate Text"
+                </button>
+            </div>
+            {move || render_colored_text(text.get())}
+            {move || {
+                let colors = text_eval_result.get();
+                (!colors.is_empty()).then(|| view! {
+                    <div style="margin-top: 1rem;">
+                    <h3>"Text Evaluation Result:"</h3>
+                    <p style="font-size: 1.2rem;">
+                        {colors.iter().map(|c| {
+                            let css = to_css_color(c);
+                            let name = format!("{} ", c);
+                            view! { <span style=format!("color: {};", css)>{name}</span> }
+                        }).collect::<Vec<_>>()}
+                    </p>
+                    </div>
+                })
+            }}
+
 <div style="margin-top: 3rem;">
         <h3>"Colour Definitions"</h3>
        <ul style="line-height: 2;">
@@ -266,6 +306,73 @@ pub fn main() {
     console_error_panic_hook::set_once();
     mount_to_body(|| view! { <App/> });
 }
+fn color_from_name(name: &str) -> Option<Color> {
+    match name.to_lowercase().as_str() {
+        "red" => Some(Color::Primary(Red)),
+        "blue" => Some(Color::Primary(Blue)),
+        "yellow" => Some(Color::Primary(Yellow)),
+        "orange" => Some(Color::Orange),
+        "green" => Some(Color::Green),
+        "purple" => Some(Color::Purple),
+        "pink" => Some(Color::Pink),
+        "cyan" => Some(Color::Cyan),
+        "violet" => Some(Color::Violet),
+        "lime" => Some(Color::Lime),
+        "teal" => Some(Color::Teal),
+        _ => None,
+    }
+}
+
+fn render_colored_text(text: String) -> impl IntoView {
+    const COLOR_NAMES: &[(&str, &str)] = &[
+        ("red", "red"), ("blue", "blue"), ("yellow", "yellow"),
+        ("orange", "orange"), ("green", "green"), ("purple", "purple"),
+        ("pink", "pink"), ("cyan", "cyan"), ("violet", "violet"),
+        ("lime", "lime"), ("teal", "teal"),
+    ];
+
+    let mut spans: Vec<leptos::View> = Vec::new();
+    let mut current = String::new();
+    let mut in_word = false;
+
+    for ch in text.chars() {
+        let is_alpha = ch.is_alphabetic();
+        if is_alpha != in_word {
+            if !current.is_empty() {
+                let chunk = current.clone();
+                let style = if in_word {
+                    let lower = chunk.to_lowercase();
+                    COLOR_NAMES.iter()
+                        .find(|(name, _)| *name == lower)
+                        .map(|(_, css)| format!("color: {};", css))
+                        .unwrap_or_else(|| "color: gray;".to_string())
+                } else {
+                    "color: gray;".to_string()
+                };
+                spans.push(view! { <span style=style>{chunk}</span> }.into_view());
+                current = String::new();
+            }
+            in_word = is_alpha;
+        }
+        current.push(ch);
+    }
+    if !current.is_empty() {
+        let chunk = current.clone();
+        let style = if in_word {
+            let lower = chunk.to_lowercase();
+            COLOR_NAMES.iter()
+                .find(|(name, _)| *name == lower)
+                .map(|(_, css)| format!("color: {};", css))
+                .unwrap_or_else(|| "color: gray;".to_string())
+        } else {
+            "color: gray;".to_string()
+        };
+        spans.push(view! { <span style=style>{chunk}</span> }.into_view());
+    }
+
+    view! { <p style="white-space: pre-wrap;">{spans}</p> }
+}
+
 fn to_css_color(color: &Color) -> &'static str {
     match color {
         Color::Primary(Red) => "red",
