@@ -1,6 +1,6 @@
 # Colourful Playground
 
-A Rust/Leptos WASM app.
+A Rust/Leptos WASM app. Live at https://ar2202.github.io/Colourful_playground/
 
 ## Running locally
 
