@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use gloo_net::http::Request;
 use serde::{Serialize, Deserialize};
 mod interpreter;
-use interpreter::{Color, PrimaryColor, Expr, build_expr_from_colors, evaluate, to_colourful,extract_colors};
+use interpreter::{Color, PrimaryColor, Expr, build_expr_from_colors, evaluate, to_colourful, extract_colors, to_ski_string, parse_ski};
 use crate::PrimaryColor::{Red, Blue, Yellow};
 #[derive(Serialize)]
 struct EvalRequest {
@@ -57,6 +57,8 @@ fn App() -> impl IntoView {
 
 let (evaluation_result, set_evaluation_result) = create_signal(Vec::<Color>::new());
 let (text_eval_result, set_text_eval_result) = create_signal(Vec::<Color>::new());
+let (ski_result, set_ski_result) = create_signal(String::new());
+let (ski_eval_result, set_ski_eval_result) = create_signal(String::new());
 let color_buttons = {
     let color_list = colors.get().clone();
     color_list.into_iter().map(|c| {
@@ -228,22 +230,53 @@ if !colors.is_empty() {
                     prop:value=text
                     on:input=move |e| set_text.set(event_target_value(&e))
                 />
-                <button
-                    style="font-size: 1.2rem; padding: 0.5rem 1rem; white-space: nowrap;"
-                    on:click=move |_| {
-                        let colors: Vec<Color> = text.get()
-                            .split(|c: char| !c.is_alphabetic())
-                            .filter_map(|word| color_from_name(word))
-                            .collect();
-                        if !colors.is_empty() {
-                            let expr = build_expr_from_colors(&colors);
-                            let result = extract_colors(&evaluate(expr)).into_iter().rev().collect();
-                            set_text_eval_result.set(result);
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button
+                        style="font-size: 1.2rem; padding: 0.5rem 1rem; white-space: nowrap;"
+                        on:click=move |_| {
+                            let colors: Vec<Color> = text.get()
+                                .split(|c: char| !c.is_alphabetic())
+                                .filter_map(|word| color_from_name(word))
+                                .collect();
+                            if !colors.is_empty() {
+                                let expr = build_expr_from_colors(&colors);
+                                let result = extract_colors(&evaluate(expr)).into_iter().rev().collect();
+                                set_text_eval_result.set(result);
+                            }
                         }
-                    }
-                >
-                    "Evaluate Text"
-                </button>
+                    >
+                        "Evaluate Text"
+                    </button>
+                    <button
+                        style="font-size: 1.2rem; padding: 0.5rem 1rem; white-space: nowrap;"
+                        on:click=move |_| {
+                            let colors: Vec<Color> = text.get()
+                                .split(|c: char| !c.is_alphabetic())
+                                .filter_map(|word| color_from_name(word))
+                                .collect();
+                            if !colors.is_empty() {
+                                let expr = build_expr_from_colors(&colors);
+                                set_ski_result.set(to_ski_string(&expr));
+                            }
+                        }
+                    >
+                        "Transpile to SKI"
+                    </button>
+                    <button
+                        style="font-size: 1.2rem; padding: 0.5rem 1rem; white-space: nowrap;"
+                        on:click=move |_| {
+                            let ski = ski_result.get();
+                            if !ski.is_empty() {
+                                match parse_ski(&ski) {
+                                    Ok(expr) => set_ski_eval_result.set(to_ski_string(&evaluate(expr))),
+                                    Err(e) => set_ski_eval_result.set(format!("Parse error: {}", e)),
+                                }
+                            }
+                        }
+                    >
+                        "Evaluate SKI"
+                    </button>
+                </div>
             </div>
             {move || render_colored_text(text.get())}
             {move || {
@@ -258,6 +291,24 @@ if !colors.is_empty() {
                             view! { <span style=format!("color: {};", css)>{name}</span> }
                         }).collect::<Vec<_>>()}
                     </p>
+                    </div>
+                })
+            }}
+            {move || {
+                let ski = ski_result.get();
+                (!ski.is_empty()).then(|| view! {
+                    <div style="margin-top: 1rem;">
+                        <h3>"SKI Transpilation:"</h3>
+                        <p style="font-size: 1.2rem; font-family: monospace;">{ski}</p>
+                    </div>
+                })
+            }}
+            {move || {
+                let result = ski_eval_result.get();
+                (!result.is_empty()).then(|| view! {
+                    <div style="margin-top: 1rem;">
+                        <h3>"SKI Evaluation Result:"</h3>
+                        <p style="font-size: 1.2rem; font-family: monospace;">{result}</p>
                     </div>
                 })
             }}

@@ -120,6 +120,64 @@ pub fn evaluate(expr: Expr) -> Expr {
     }
 }
 
+/// Parse a SKI combinator string into an Expr.
+/// Grammar: expr := term+   term := 'S' | 'K' | 'I' | '(' expr ')'
+/// Application is left-associative.
+pub fn parse_ski(input: &str) -> Result<Expr, String> {
+    let chars: Vec<char> = input.chars().filter(|c| !c.is_whitespace()).collect();
+    let (expr, rest) = parse_expr_chars(&chars)?;
+    if rest.is_empty() {
+        Ok(expr)
+    } else {
+        Err(format!("Unexpected characters after expression: {:?}", rest))
+    }
+}
+
+fn parse_expr_chars(input: &[char]) -> Result<(Expr, &[char]), String> {
+    let (first, mut rest) = parse_term_chars(input)?;
+    let mut acc = first;
+    while !rest.is_empty() && rest[0] != ')' {
+        let (next, new_rest) = parse_term_chars(rest)?;
+        acc = Expr::Apply(Box::new(acc), Box::new(next));
+        rest = new_rest;
+    }
+    Ok((acc, rest))
+}
+
+fn parse_term_chars(input: &[char]) -> Result<(Expr, &[char]), String> {
+    match input.first() {
+        Some('S') => Ok((Expr::Prim(PrimaryColor::Blue), &input[1..])),
+        Some('K') => Ok((Expr::Prim(PrimaryColor::Red), &input[1..])),
+        Some('I') => Ok((Expr::Prim(PrimaryColor::Yellow), &input[1..])),
+        Some('(') => {
+            let (expr, rest) = parse_expr_chars(&input[1..])?;
+            match rest.first() {
+                Some(')') => Ok((expr, &rest[1..])),
+                _ => Err("Expected closing ')'".to_string()),
+            }
+        }
+        Some(c) => Err(format!("Unexpected character '{}'", c)),
+        None => Err("Unexpected end of input".to_string()),
+    }
+}
+
+/// Convert an expression to SKI combinator notation
+pub fn to_ski_string(expr: &Expr) -> String {
+    match expr {
+        Expr::Prim(PrimaryColor::Red) => "K".to_string(),
+        Expr::Prim(PrimaryColor::Yellow) => "I".to_string(),
+        Expr::Prim(PrimaryColor::Blue) => "S".to_string(),
+        Expr::Apply(f, x) => {
+            let f_str = to_ski_string(f);
+            let x_str = match x.as_ref() {
+                Expr::Prim(_) => to_ski_string(x),
+                Expr::Apply(_, _) => format!("({})", to_ski_string(x)),
+            };
+            format!("{}{}", f_str, x_str)
+        }
+    }
+}
+
 /// Convert an expression back to Colourful syntax
 pub fn to_colourful(expr: &Expr) -> String {
     match expr {
