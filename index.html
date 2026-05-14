@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Colourful Playground</title>
+<link rel="modulepreload" href="/Colourful_playground-8caaafd15a2ec4d6.js" crossorigin="anonymous" integrity="sha384-Klqcf9euybL+Q8H1tsdqLrpAv+1yfNR49IVXG424opnsAb8QgMZDqPpWD7rAPIfv"><link rel="preload" href="/Colourful_playground-8caaafd15a2ec4d6_bg.wasm" crossorigin="anonymous" integrity="sha384-CIUHYeT3kM+Sz/5YH2MOzEWDwo+dSmZeMa+XxHSyJjN7Jmz5hQBq67FrvAWOzcxu" as="fetch" type="application/wasm"><link rel="modulepreload" href="/Colourful_playground/Colourful_playground-c749e3c617f54a96.js" crossorigin="anonymous" integrity="sha384-d6XuBoVnlFIoCjJ/VVHgbAbS8O9ajcUDJRhT1vWXdPQ/v1v/BF3j7UpDYnPm/Un6"><link rel="preload" href="/Colourful_playground/Colourful_playground-c749e3c617f54a96_bg.wasm" crossorigin="anonymous" integrity="sha384-7AHNUw83X0gtwMKQFzTH28deYzVZX1uxqO8YYuA+3AL+4b20LK7HdrOVRTss9VNk" as="fetch" type="application/wasm"></head>
+
+<body>
+
+
+<script type="module">
+  async function run() {
+    const init = (await import('./Colourful_playground-8caaafd15a2ec4d6.js')).default;
+    const wasm = await init({ module_or_path: './Colourful_playground-8caaafd15a2ec4d6_bg.wasm' });
+
+    window.wasmBindings = wasm;
+    dispatchEvent(new CustomEvent("TrunkApplicationStarted", { detail: { wasm } }));
+  }
+
+  run();
+</script>
+
+<script type="module">
+import init, * as bindings from '/Colourful_playground/Colourful_playground-c749e3c617f54a96.js';
+const wasm = await init({ module_or_path: '/Colourful_playground/Colourful_playground-c749e3c617f54a96_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+
+</html>
